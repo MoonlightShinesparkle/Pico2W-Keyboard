@@ -26,5 +26,5 @@ while True:
 	if (button1.value):
 		Kbd.send(Keycode.M)
 		x += 1
-		print("Button pressed"+x)
+		print("Button pressed"+str(x))
 	time.sleep(0.1)
