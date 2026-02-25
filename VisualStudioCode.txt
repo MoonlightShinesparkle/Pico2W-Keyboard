@@ -1,0 +1,5 @@
+If working with Visual Studio Code's CircuitPython v2 extension, modify .vscode's settings.json by:
+- Create a lib folder in the root
+- Enter "python.analysis.extraPaths"
+- Add "lib"
+- Drag adafruit_hid into lib
