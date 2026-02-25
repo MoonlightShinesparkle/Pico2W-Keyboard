@@ -36,13 +36,13 @@ while True:
 	if (button1.value):
 		Kbd.send(Keycode.M)
 		x += 1
-		print("Button pressed"+str(x))
+		print("Button pressed 1 "+str(x))
 	if (button2.value):
 		Kbd.send(Keycode.O)
 		x += 1
-		print("Button pressed"+str(x))
+		print("Button pressed 2 "+str(x))
 	if (button3.value):
 		Kbd.send(Keycode.N)
 		x += 1
-		print("Button pressed"+str(x))
+		print("Button pressed 3 "+str(x))
 	time.sleep(0.1)
