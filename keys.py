@@ -10,8 +10,8 @@ from adafruit_hid.keyboard_layout_us import KeyboardLayoutUS
 from adafruit_hid.keycode import Keycode
 import usb_hid
 
-Kbd = Keyboard(usb_hid.devices)
-Layout = KeyboardLayoutUS(Kbd)
+Kbd : Keyboard = Keyboard(usb_hid.devices)
+Layout : KeyboardLayoutUS = KeyboardLayoutUS(Kbd)
 
 '''
 ║ *- Inpin & Outpin are keyboard based														   ║
@@ -34,6 +34,11 @@ KeyboardInputs = [
 	board.GP0, board.GP1, board.GP2, board.GP3, board.GP4
 ]
 
+# Keyboard LED pins
+KeyboardLEDCapsLock = setup.SetupOutput(board.GP12)
+KeyboardLEDNumLock = setup.SetupOutput(board.GP13)
+KeyboardLEDScrollLock = setup.SetupOutput(board.GP14)
+
 # Loaded pins
 KeyboardOutputsLoaded = []
 KeyboardInputsLoaded = []
@@ -46,13 +51,16 @@ KeyTimeRegistries = []	# How long they have been pressed
 # Time registry pressed again
 KeySpamDelay = 0.1
 
+# Key press quantity
+KeyPressQuantity = 0
+
 # Temporal key array thingy
 TempKeys = [
-	["m","o","n","l","i"],
-	["g","h","t","w","a"],
-	["s","e","r",":","3"],
-	[" ","n","y","U","O"],
-	[".","P","-","~","="]
+	[Keycode.M,Keycode.O,Keycode.N,Keycode.L,Keycode.I],
+	[Keycode.G,Keycode.H,Keycode.T,Keycode.W,Keycode.A],
+	[Keycode.S,Keycode.E,Keycode.R,Keycode.SEMICOLON,Keycode.THREE],
+	[Keycode.SPACE,Keycode.ENTER,Keycode.LEFT_SHIFT,Keycode.CAPS_LOCK,Keycode.BACKSPACE],
+	[Keycode.O,Keycode.U,Keycode.PERIOD,Keycode.EQUALS,Keycode.MINUS]
 ]
 
 def SetupKeys() -> None:
@@ -85,6 +93,11 @@ def ScanRoutine() -> None:
 	global KeysJustPressed
 	global KeysPressing
 	global KeyTimeRegistries
+	global KeyPressQuantity
+
+	KeyboardLEDCapsLock.value = Kbd.led_on(Kbd.LED_CAPS_LOCK)
+	KeyboardLEDNumLock.value = Kbd.led_on(Kbd.LED_NUM_LOCK)
+	KeyboardLEDScrollLock.value = Kbd.led_on(Kbd.LED_SCROLL_LOCK)
 
 	# Current matrix pawsitions
 	CurrXPos = 0
@@ -99,18 +112,20 @@ def ScanRoutine() -> None:
 		KeysPressingEntries : list = KeysPressing[CurrYPos]
 
 		for x in KeyboardOutputsLoaded:
-			if not x.value:
+			# Adafruit states max 8 keys pressing at once
+			if not x.value and (KeyPressQuantity <= 8):
 				# Check if key is in KeysJustPressedEntries list
 				if CurrXPos in KeysJustPressedEntries:
 					KeysPressingEntries.append(CurrXPos)
 					KeysJustPressedEntries.remove(CurrXPos)
-					print("Still pressing "+str(CurrXPos)+", "+str(CurrYPos))
+					#print("Still pressing "+str(CurrXPos)+", "+str(CurrYPos))
 
 				# Check if key is not in KeysPressingEntries
 				elif not (CurrXPos in KeysPressingEntries):
 					KeysJustPressedEntries.append(CurrXPos)
-					print("Just pressed "+str(CurrXPos)+", "+str(CurrYPos))
-					Layout.write(TempKeys[CurrYPos][CurrXPos])
+					#print("Just pressed "+str(CurrXPos)+", "+str(CurrYPos))
+					Kbd.press(TempKeys[CurrYPos][CurrXPos])
+					KeyPressQuantity += 1
 				# Check if key is in KeysPressingEntries
 				else:
 					# Continously effectuate action
@@ -119,11 +134,16 @@ def ScanRoutine() -> None:
 			elif CurrXPos in KeysPressingEntries:
 				# Remove from KeysPressingEntries
 				KeysPressingEntries.remove(CurrXPos)
-				print("Released "+str(CurrXPos)+", "+str(CurrYPos))
+				Kbd.release(TempKeys[CurrYPos][CurrXPos])
+				KeyPressQuantity -= 1
+				#print("Released "+str(CurrXPos)+", "+str(CurrYPos))
+			
 			elif CurrXPos in KeysJustPressedEntries:
 				# Remove from KeysJustPressedEntries
 				KeysJustPressedEntries.remove(CurrXPos)
-				print("Released "+str(CurrXPos)+", "+str(CurrYPos))
+				Kbd.release(TempKeys[CurrYPos][CurrXPos])
+				KeyPressQuantity -= 1
+				#print("Released "+str(CurrXPos)+", "+str(CurrYPos))
 
 			CurrXPos += 1
 
