@@ -24,4 +24,3 @@ def InitSetup():
 	PicoServer.start(str(wifi.radio.ipv4_address_ap),80)
 	print("Server started!\nConnect at:")
 	print(wifi.radio.ipv4_address_ap)
-	print(wifi.radio)
