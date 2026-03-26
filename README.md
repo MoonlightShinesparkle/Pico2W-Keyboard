@@ -1,6 +1,13 @@
 # Pico 2W keyboard
 A proyect made by the group Star Dream Sword which allows for the creation of a 5x5 matrix keyboard with an EEPROM for layout storage, leaving the user to modify the layout without requiring to rewrite the source code
 
+# Dependencies
+This project depends on some adafruit modules, including:
+- CircuitPython
+- Adafruit HID
+- Adafruit HTTPServer
+- Adafruit Requests
+
 # THIS PROJECT IS WIP
 This means it hasn't been finished and isn't in a functional state, however the project has the current direction in mind:
 

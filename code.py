@@ -2,15 +2,15 @@
 import time
 
 # Modules
-import keys
-import saving
+import keysys.keys as keys
+import data.saving as saving
 import config.server
 
 # Delegate key misc to keys module
 keys.SetupKeys()
 
-# saving.PrintLen()
-# saving.TestWrite()
+saving.PrintLen()
+saving.Preload()
 
 config.server.InitSetup()
 
