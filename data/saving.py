@@ -29,11 +29,11 @@ TEXTIND = 0x03
 
 # Default data
 DEFAULTDATA = [
-	0x01,Keycode.Q,0x01,Keycode.W,0x01,Keycode.E,0x01,Keycode.R,0x01,Keycode.T,
-	0x01,Keycode.Y,0x01,Keycode.U,0x01,Keycode.I,0x01,Keycode.O,0x01,Keycode.P,
-	0x01,Keycode.A,0x01,Keycode.S,0x01,Keycode.D,0x01,Keycode.F,0x01,Keycode.G,
-	0x01,Keycode.H,0x01,Keycode.J,0x01,Keycode.K,0x01,Keycode.L,0x01,Keycode.Z,
-	0x01,Keycode.X,0x01,Keycode.C,0x01,Keycode.V,0x01,Keycode.B,0x01,Keycode.N
+	KEYIND,Keycode.Q,KEYIND,Keycode.W,KEYIND,Keycode.E,KEYIND,Keycode.R,KEYIND,Keycode.T,
+	KEYIND,Keycode.Y,KEYIND,Keycode.U,KEYIND,Keycode.I,KEYIND,Keycode.O,KEYIND,Keycode.P,
+	KEYIND,Keycode.A,KEYIND,Keycode.S,KEYIND,Keycode.D,KEYIND,Keycode.F,KEYIND,Keycode.G,
+	KEYIND,Keycode.H,KEYIND,Keycode.J,KEYIND,Keycode.K,KEYIND,Keycode.L,KEYIND,Keycode.Z,
+	KEYIND,Keycode.X,KEYIND,Keycode.C,KEYIND,Keycode.V,KEYIND,Keycode.B,KEYIND,Keycode.N
 ]
 
 # Determines the file's end point
@@ -71,19 +71,39 @@ def LoadDefaults():
 # 0x04 					| End
 def LoadBlocks():
 	Ptr : int = len(MAGICNO)
+	XPos : int = 0
+	YPos : int = 0
 	while True:
-		if (Ptr >= EEProm.Length):
+		if (Ptr >= EEProm.Length) or (YPos >= 5):
 			break
 
 		BlockType : int = EEProm[Ptr]
-		if Ptr == 0x01:
-			pass
-		elif Ptr == 0x02:
-			pass
-		elif Ptr == 0x03:
-			pass
-		elif Ptr == 0x04:
+
+		if BlockType == 0x01:
+			Data : int = EEProm[Ptr+1]
+			Ptr += 2
+			# Create normal key and store in array
+
+		elif BlockType == 0x02:
+			Size : int = EEProm[Ptr+1]
+			Ptr += 2+Size
+			# Create multiple keypress key and store in array
+
+		elif BlockType == 0x03:
+			Size : int = EEProm[Ptr+1]
+			Ptr += 2+Size
+			# Create text key and store in array
+
+		elif BlockType == 0x04:
 			break
+
+		else:
+			Ptr += 1
+
+		XPos += 1
+		if XPos >= 5:
+			XPos = 0
+			YPos += 1
 
 
 
