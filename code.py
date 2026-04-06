@@ -3,14 +3,14 @@ import time
 
 # Modules
 import keysys.keys as keys
-import data.saving as saving
+import data.MemInterfacing as MemInterfacing
 import config.server
 
 # Delegate key misc to keys module
 keys.SetupKeys()
 
-saving.PrintLen()
-saving.Preload()
+MemInterfacing.PrintLen()
+MemInterfacing.Preload(keys.TempKeys)
 
 config.server.InitSetup()
 

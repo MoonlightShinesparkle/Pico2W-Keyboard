@@ -9,6 +9,8 @@ from adafruit_hid.keyboard import Keyboard
 from adafruit_hid.keyboard_layout_us import KeyboardLayoutUS
 from adafruit_hid.keycode import Keycode
 import usb_hid
+from keysys.KeyTypes import NormalKey
+from keysys.KeyTypes import BaseKey
 
 Kbd : Keyboard = Keyboard(usb_hid.devices)
 Layout : KeyboardLayoutUS = KeyboardLayoutUS(Kbd)
@@ -35,32 +37,28 @@ KeyboardInputs = [
 ]
 
 # Keyboard LED pins
-KeyboardLEDCapsLock = setup.SetupOutput(board.GP12)
-KeyboardLEDNumLock = setup.SetupOutput(board.GP13)
-KeyboardLEDScrollLock = setup.SetupOutput(board.GP14)
+KeyboardLEDCapsLock = None 
+KeyboardLEDNumLock = None 
+KeyboardLEDScrollLock = None
 
 # Loaded pins
-KeyboardOutputsLoaded = []
-KeyboardInputsLoaded = []
+KeyboardOutputsLoaded : list[digitalio.DigitalInOut] = []
+KeyboardInputsLoaded : list[digitalio.DigitalInOut] = []
 
 # Key lists
-KeysJustPressed = []	# Keys that just got pressed
-KeysPressing = []		# Keys that are being pressed
-KeyTimeRegistries = []	# How long they have been pressed
-
-# Time registry pressed again
-KeySpamDelay = 0.1
+KeysJustPressed : list[list[int]] = []	# Keys that just got pressed
+KeysPressing : list[list[int]] = []		# Keys that are being pressed
 
 # Key press quantity
 KeyPressQuantity = 0
 
 # Temporal key array thingy
-TempKeys = [
-	[Keycode.M,Keycode.O,Keycode.N,Keycode.L,Keycode.I],
-	[Keycode.G,Keycode.H,Keycode.T,Keycode.W,Keycode.A],
-	[Keycode.S,Keycode.E,Keycode.R,Keycode.SEMICOLON,Keycode.THREE],
-	[Keycode.SPACE,Keycode.ENTER,Keycode.LEFT_SHIFT,Keycode.CAPS_LOCK,Keycode.BACKSPACE],
-	[Keycode.O,Keycode.U,Keycode.PERIOD,Keycode.EQUALS,Keycode.MINUS]
+TempKeys : list[list[BaseKey]] = [
+	[NormalKey(Keycode.M),NormalKey(Keycode.O),NormalKey(Keycode.N),NormalKey(Keycode.L),NormalKey(Keycode.I)],
+	[NormalKey(Keycode.G),NormalKey(Keycode.H),NormalKey(Keycode.T),NormalKey(Keycode.W),NormalKey(Keycode.A)],
+	[NormalKey(Keycode.S),NormalKey(Keycode.E),NormalKey(Keycode.R),NormalKey(Keycode.SEMICOLON),NormalKey(Keycode.THREE)],
+	[NormalKey(Keycode.SPACE),NormalKey(Keycode.ENTER),NormalKey(Keycode.LEFT_SHIFT),NormalKey(Keycode.CAPS_LOCK),NormalKey(Keycode.BACKSPACE)],
+	[NormalKey(Keycode.O),NormalKey(Keycode.U),NormalKey(Keycode.PERIOD),NormalKey(Keycode.EQUALS),NormalKey(Keycode.MINUS)]
 ]
 
 def SetupKeys() -> None:
@@ -68,31 +66,38 @@ def SetupKeys() -> None:
 
 	global KeysJustPressed
 	global KeysPressing
-	global KeyTimeRegistries
+
+	global KeyboardLEDCapsLock
+	global KeyboardLEDNumLock
+	global KeyboardLEDScrollLock
+
+	if KeyboardLEDCapsLock is None:
+		KeyboardLEDCapsLock = setup.SetupOutput(board.GP12)
+	
+	if KeyboardLEDNumLock is None:
+		KeyboardLEDNumLock = setup.SetupOutput(board.GP13)
+
+	if KeyboardLEDScrollLock is None:
+		KeyboardLEDScrollLock = setup.SetupOutput(board.GP14)
 
 	KeysJustPressed.clear()
 	KeysPressing.clear()
-	KeyTimeRegistries.clear()
 
 	for Inpin in KeyboardInputs:
-		Pin = setup.SetupOutput(Inpin)
+		Pin : digitalio.DigitalInOut = setup.SetupOutput(Inpin)
 		Pin.value = 1
 		KeyboardInputsLoaded.append(Pin)
 		KeysJustPressed.append([])
 		KeysPressing.append([])
-		KeyTimeRegistries.append([])
 	
 	for Outpin in KeyboardOutputs:
-		Pin = setup.SetupInput(Outpin, digitalio.Pull.UP)
+		Pin : digitalio.DigitalInOut = setup.SetupInput(Outpin, digitalio.Pull.UP)
 		KeyboardOutputsLoaded.append(Pin)
-		for Entry in KeyTimeRegistries:
-			Entry.append(0)
 
 def ScanRoutine() -> None:
 	"""Routine for scanning through all keys"""
 	global KeysJustPressed
 	global KeysPressing
-	global KeyTimeRegistries
 	global KeyPressQuantity
 
 	KeyboardLEDCapsLock.value = Kbd.led_on(Kbd.LED_CAPS_LOCK)
@@ -108,8 +113,8 @@ def ScanRoutine() -> None:
 		y.value = 0
 		time.sleep(0.000015)
 
-		KeysJustPressedEntries : list = KeysJustPressed[CurrYPos]
-		KeysPressingEntries : list = KeysPressing[CurrYPos]
+		KeysJustPressedEntries : list[int] = KeysJustPressed[CurrYPos]
+		KeysPressingEntries : list[int] = KeysPressing[CurrYPos]
 
 		for x in KeyboardOutputsLoaded:
 			# Adafruit states max 8 keys pressing at once
@@ -124,25 +129,24 @@ def ScanRoutine() -> None:
 				elif not (CurrXPos in KeysPressingEntries):
 					KeysJustPressedEntries.append(CurrXPos)
 					#print("Just pressed "+str(CurrXPos)+", "+str(CurrYPos))
-					Kbd.press(TempKeys[CurrYPos][CurrXPos])
-					KeyPressQuantity += 1
-				# Check if key is in KeysPressingEntries
-				else:
-					# Continously effectuate action
-					pass
+					Pressable : BaseKey = TempKeys[CurrYPos][CurrXPos]
+					Pressable.Press(Kbd,Layout)
+					KeyPressQuantity += Pressable.Weight
 			# Check if key is in KeysPressingEntries
 			elif CurrXPos in KeysPressingEntries:
 				# Remove from KeysPressingEntries
 				KeysPressingEntries.remove(CurrXPos)
-				Kbd.release(TempKeys[CurrYPos][CurrXPos])
-				KeyPressQuantity -= 1
+				Pressable : BaseKey = TempKeys[CurrYPos][CurrXPos]
+				Pressable.Unpress(Kbd,Layout)
+				KeyPressQuantity -= Pressable.Weight
 				#print("Released "+str(CurrXPos)+", "+str(CurrYPos))
 			
 			elif CurrXPos in KeysJustPressedEntries:
 				# Remove from KeysJustPressedEntries
 				KeysJustPressedEntries.remove(CurrXPos)
-				Kbd.release(TempKeys[CurrYPos][CurrXPos])
-				KeyPressQuantity -= 1
+				Pressable : BaseKey = TempKeys[CurrYPos][CurrXPos]
+				Pressable.Unpress(Kbd,Layout)
+				KeyPressQuantity -= Pressable.Weight
 				#print("Released "+str(CurrXPos)+", "+str(CurrYPos))
 
 			CurrXPos += 1

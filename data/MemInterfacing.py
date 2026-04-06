@@ -2,6 +2,7 @@ import board
 import busio
 import data.Mem24lc16 as Mem24lc16
 from adafruit_hid.keycode import Keycode
+import keysys.KeyTypes as KeyTypes
 
 i2c : busio.I2C = busio.I2C(board.GP11,board.GP10)
 
@@ -69,10 +70,15 @@ def LoadDefaults():
 # 0x02 [Size] [N ENUM] 	| Size +2 bytes
 # 0x03 [Size] [Text]   	| Size +2 bytes
 # 0x04 					| End
-def LoadBlocks():
+def LoadBlocks(Modifiable : list[list[KeyTypes.BaseKey]]):
 	Ptr : int = len(MAGICNO)
 	XPos : int = 0
 	YPos : int = 0
+
+	# Max board X and Y button coords
+	MaxY : int = len(Modifiable)
+	MaxX : int = len(Modifiable[0])
+
 	while True:
 		if (Ptr >= EEProm.Length) or (YPos >= 5):
 			break
@@ -83,16 +89,36 @@ def LoadBlocks():
 			Data : int = EEProm[Ptr+1]
 			Ptr += 2
 			# Create normal key and store in array
+			Modifiable[YPos][XPos] = KeyTypes.NormalKey(Data)
 
 		elif BlockType == 0x02:
 			Size : int = EEProm[Ptr+1]
-			Ptr += 2+Size
+			Ptr += 2
+			Data = []
 			# Create multiple keypress key and store in array
+			NewKey : KeyTypes.MultipressKey = KeyTypes.MultipressKey()
+			
+			for x in range(Size):
+				Data[x] = EEProm[Ptr]
+				Ptr += 1
+
+			NewKey.Data = Data
+			Modifiable[YPos][XPos] = NewKey
 
 		elif BlockType == 0x03:
 			Size : int = EEProm[Ptr+1]
-			Ptr += 2+Size
+			Ptr += 2
+			Data = ""
 			# Create text key and store in array
+			NewKey : KeyTypes.TextWriterKey = KeyTypes.TextWriterKey()
+
+			for x in range(Size):
+				Data += chr(EEProm[Ptr])
+				Ptr += 1
+
+			NewKey.Data = Data
+			Modifiable[YPos][XPos] = NewKey
+
 
 		elif BlockType == 0x04:
 			break
@@ -101,14 +127,18 @@ def LoadBlocks():
 			Ptr += 1
 
 		XPos += 1
-		if XPos >= 5:
+		if XPos >= MaxX:
 			XPos = 0
 			YPos += 1
+
+			if YPos >= MaxY:
+				# Data overflow
+				break
 
 
 
 # Function to preload the needed data for the calc
-def Preload():
+def Preload(Modifiable : list[list[KeyTypes.BaseKey]]):
 	# Checks if it has viable preloaded data
 	Loadable : bool = True
 
@@ -125,3 +155,5 @@ def Preload():
 	if not Loadable:
 		LoadDefaults()
 		print("Loaded default data")
+
+	LoadBlocks(Modifiable)
