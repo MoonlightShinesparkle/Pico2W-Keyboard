@@ -125,6 +125,7 @@ def LoadBlocks(Modifiable : list[list[KeyTypes.BaseKey]]):
 
 		else:
 			Ptr += 1
+			continue
 
 		XPos += 1
 		if XPos >= MaxX:
