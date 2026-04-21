@@ -1,0 +1,1 @@
+document.getElementById('mensaje').innerHTML = '¡Hola, esto es un mensaje desde JS!';
