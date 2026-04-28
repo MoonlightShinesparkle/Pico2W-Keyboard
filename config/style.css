@@ -1,0 +1,42 @@
+*{
+    margin: 0;
+    padding: 0;
+    
+}
+body{
+    background-color: #000;
+    color:#fff;
+    overflow-x: hidden;
+}
+#estrellas-container{
+    position: fixed;
+    inset :0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 9999;
+}
+.estrella{
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    background-color:rgba(0, 0, 255, 0.345);
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+    opacity: 0;
+    pointer-events: none;
+    z-index: -1;
+
+}
+
+@keyframes moverArriba {
+    0% {
+        opacity: 0;
+        transform: translateY(0);
+    }
+    25% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-100vh);
+    }
+}
