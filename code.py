@@ -4,18 +4,20 @@ import time
 # Modules
 import keysys.keys as keys
 import data.MemInterfacing as MemInterfacing
-import config.server
+import config.server as Server
 
 # Delegate key misc to keys module
 keys.SetupKeys()
 
+Server.BindedKeys = keys.TempKeys
+
 MemInterfacing.PrintLen()
 MemInterfacing.Preload(keys.TempKeys)
 
-config.server.InitSetup()
+Server.InitSetup()
 
 # Constantly scan for key presses
 while True:
 	keys.ScanRoutine()
-	config.server.PicoServer.poll()
+	Server.PicoServer.poll()
 	time.sleep(0.00075)
