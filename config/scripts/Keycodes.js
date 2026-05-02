@@ -155,3 +155,13 @@ function FilterKeycode(Keycode){
 	}
 }
 
+// Creates a set of Option elements and adds them to the provided selector
+function LoadKeycodeSelector(Selector){
+	for (Index in Keycodes){
+		const OptionElement = document.createElement("option")
+		OptionElement.value = Index
+		OptionElement.innerHTML = Keycodes[Index]
+
+		Selector.appendChild(OptionElement);
+	}
+}
