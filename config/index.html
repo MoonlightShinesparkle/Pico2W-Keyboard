@@ -19,42 +19,7 @@
         </header>
         <div class="root">
             <div class="table-container rootsplit">
-                <table>
-                    <tr>
-                        <td><div><button class="btn-estilizado">A</button></div></td>
-                        <td><div><button class="btn-estilizado">A</button></div></td>
-                        <td><div><button class="btn-estilizado">A</button></div></td>
-                        <td><div><button class="btn-estilizado">A</button></div></td>
-                        <td><div><button class="btn-estilizado">A</button></div></td>
-                    </tr>
-                    <tr>
-                        <td><div><button class="btn-estilizado">A</button></div></td>
-                        <td><div><button class="btn-estilizado">A</button></div></td>
-                        <td><div><button class="btn-estilizado">A</button></div></td>
-                        <td><div><button class="btn-estilizado">A</button></div></td>
-                        <td><div><button class="btn-estilizado">A</button></div></td>
-                    </tr>
-                    <tr>
-                        <td><div><button class="btn-estilizado">A</button></div></td>
-                        <td><div><button class="btn-estilizado">A</button></div></td>
-                        <td><div><button class="btn-estilizado">A</button></div></td>
-                        <td><div><button class="btn-estilizado">A</button></div></td>
-                        <td><div><button class="btn-estilizado">A</button></div></td>
-                    </tr>
-                    <tr>
-                        <td><div><button class="btn-estilizado">A</button></div></td>
-                        <td><div><button class="btn-estilizado">A</button></div></td>
-                        <td><div><button class="btn-estilizado">A</button></div></td>
-                        <td><div><button class="btn-estilizado">A</button></div></td>
-                        <td><div><button class="btn-estilizado">A</button></div></td>
-                    </tr>
-                    <tr>    
-                        <td><div><button class="btn-estilizado">A</button></div></td>
-                        <td><div><button class="btn-estilizado">A</button></div></td>
-                        <td><div><button class="btn-estilizado">A</button></div></td>
-                        <td><div><button class="btn-estilizado">A</button></div></td>
-                        <td><div><button class="btn-estilizado">A</button></div></td>   
-                    </tr>
+                <table id="BtnContainer">
                 </table> 
             </div>
             <div class="Aparador-container rootsplit">
@@ -65,7 +30,7 @@
                     <div class="Aparador-wrapper">
                         <button class="flecha" onclick="mover(-1)">◀</button>
                         
-                        <input type="text" id="aparador" class="Aparador" 
+                        <input type="text" id="Aparador" class="Aparador" 
                         value="N/A" readonly>
                         
                         <button class="flecha" onclick="mover(1)">▶</button>
@@ -77,9 +42,9 @@
                 <div class="fila-tipo">
                     <span class="label-tipo">Type:</span>
                     <select class="combo-tipo" id="tipo">
-                    <option value="key" selected>Key</option>
-                    <option value="text">Text</option>
-                    <option value="combo">Combo</option>
+                        <option value="key" selected>Key</option>
+                        <option value="combo">Combo</option>
+                        <option value="text">Text</option>
                     </select>
                 </div>
                 <!-- Seleccionador -->

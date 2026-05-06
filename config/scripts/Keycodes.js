@@ -126,8 +126,14 @@ const Keycodes = {
 const Codes = {
 }
 
+var ArrayedKeycodes = []
+
+var NewData = []
+var SelectedIndex = 0
+
 // Invert Keycodes into Codes
 for (Value in Keycodes){
+	ArrayedKeycodes.push(Value)
 	const Index = Keycodes[Value]
 	Codes[Index] = Value
 }
@@ -187,7 +193,7 @@ const comboConfig = document.getElementById("combo-config");
 let posicion = 0;
 
 function mover(direccion) {
-    const input = document.getElementById("aparador");
+    const input = document.getElementById("Aparador");
 
     if (input.scrollWidth <= input.clientWidth) {
         return; // no hace nada si cabe completo
@@ -271,6 +277,8 @@ function crearCombo() {
     comboContainer.appendChild(wrapper);
     totalKeys++;
     actualizarBotones();
+
+	return wrapper
 }
 
 // eliminar último
@@ -291,6 +299,135 @@ function actualizarBotones() {
     btnAgregar.disabled = (totalKeys >= MAX_KEYS);
 }
 
+// Turns a given key data into a string
+function KeyDataToText(KeyData){
+	let Returnable = ""
+	switch (KeyData["Type"]) {
+		case 1:
+			Returnable = KeycodeToText(KeyData["Data"])
+			break;
+	
+		case 2:
+			Returnable = KeycodeToText(KeyData["Data"][0]) + "+"
+			break;
+
+		case 3:
+			let AllTxt = KeyData["Data"]
+
+			for (let Letter = 0; Letter < Math.min(4,AllTxt.length); Letter++){
+				Returnable += AllTxt[Letter]
+			}
+			break;
+
+		default:
+			Returnable = "???"
+			break;
+	}
+	return Returnable
+}
+
+function LoadKeyInput(Keycode,Base) {
+	let Input = Base.getElementsByTagName("input")[0]
+	let Select = Base.getElementsByTagName("select")[0]
+
+	Input.value = String(Keycode)
+	Select.selectedIndex = ArrayedKeycodes.findIndex((Val,_,__) => {
+		return Val == Keycode
+	})
+}
+
+// Updates input fields to mirror selected key info
+function UpdateDataSelector() {
+	console.log("Loading into selector:")
+	console.log(NewData[SelectedIndex])
+
+	let ChosenData = NewData[SelectedIndex]
+	let Display = document.getElementById("Aparador")
+	Display.value = KeyDataToText(ChosenData)
+
+	let Type = document.getElementById("tipo")
+	Type.selectedIndex = ChosenData["Type"]-1
+
+	actualizarVista()
+
+	switch (ChosenData["Type"]) {
+		case 1: {
+			let Base = document.getElementById("key-config")
+			let KeyCode = ChosenData["Data"]
+			LoadKeyInput(KeyCode,Base)
+			break;
+		}
+		case 2: {
+			let Base = document.getElementById("combo-keys")
+			let AllKeys = ChosenData["Data"]
+			totalKeys = 0
+			Base.innerHTML = ""
+
+			for (let Index = 0; Index < AllKeys.length; Index++){
+				let NewCombo = crearCombo()
+				let KeyCode = AllKeys[Index]
+
+				LoadKeyInput(KeyCode,NewCombo)
+			}
+			break;
+		}
+		case 3: {
+			let Base = document.getElementById("text-config")
+			let Text = ChosenData["Data"]
+			let Input = Base.getElementsByTagName("input")[0]
+			Input.value = Text
+			break;
+		}
+		default:
+			break;
+	}
+}
+
+// Initializes all buttons
+function CreateAllButtons(){
+	try{
+		fetch("/Fetch").then((Doc) => {
+			Doc.text().then((Data) => {
+				let Parsed = JSON.parse(Data)
+				NewData = Parsed["Keys"]
+				let Table = document.getElementById("BtnContainer")
+
+				for (let Y = 0; Y < 5; Y++){
+					let NewSection = document.createElement("tr")
+
+					for (let X = 0; X < 5; X++){
+						let NewTD = document.createElement("td")
+						let NewDiv = document.createElement("div")
+						let NewBtn = document.createElement("button")
+						let CurrentIndex = X+5*Y
+						let CurrentData = NewData[CurrentIndex]
+
+						NewTD.appendChild(NewDiv)
+
+						NewBtn.className = "btn-estilizado"
+						NewBtn.innerText = KeyDataToText(CurrentData)
+						
+						NewBtn.onclick = () => {
+							SelectedIndex = CurrentIndex
+							UpdateDataSelector()
+						}
+
+						NewDiv.appendChild(NewBtn)
+
+						NewSection.appendChild(NewTD)
+					}
+
+					Table.appendChild(NewSection)
+				}
+
+				UpdateDataSelector()
+			})
+		})
+	} catch (Err) {
+		alert(`Error loading data from keys: ${Err}`)
+	}
+}
+
 // inicial → 2 combos
 for (let i = 0; i < MIN_KEYS; i++) {
     crearCombo();
@@ -302,3 +439,4 @@ btnAgregar.addEventListener("click", () => {
 });
 
 btnQuitar.addEventListener("click", eliminarCombo);
+CreateAllButtons()
