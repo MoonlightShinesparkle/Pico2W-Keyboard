@@ -87,4 +87,4 @@ class TextWriterKey(BaseKey):
 	
 	@property
 	def JSONParsed(self) -> str:
-		return f"{{\"Type\":3,\"Data\":{self.Data}}}"
+		return f"{{\"Type\":3,\"Data\":\"{self.Data}\"}}"

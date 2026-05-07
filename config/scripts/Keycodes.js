@@ -383,11 +383,78 @@ function UpdateDataSelector() {
 	}
 }
 
+function GetDataFromKeySelector(Basis){
+	let KeySelector = Basis.getElementsByTagName("select")[0]
+	return ArrayedKeycodes[KeySelector.selectedIndex]
+}
+
+function CommitChangeBtn(_){
+	console.log("Trying to commit save to main data")
+
+	let Selector = document.getElementById("tipo")
+	let Modified = {
+		"Type":Selector.selectedIndex+1,
+		"Data":20
+	}
+
+	console.log("Selected index:")
+	console.log(Selector.selectedIndex)
+
+	switch (Selector.selectedIndex) {
+		case 0:{
+			let Base = document.getElementById("key-config")
+			Modified.Data = GetDataFromKeySelector(Base)
+			break;
+		}
+		case 1:{
+			let MainContainer = document.getElementById("combo-keys")
+			let Bases = MainContainer.getElementsByClassName("combo-item")
+			Modified.Data = []
+			for (let Index = 0; Index < Bases.length; Index++){
+				let Basis = Bases.item(Index)
+				Modified.Data[Index] = GetDataFromKeySelector(Basis)
+			}
+			break;
+		}
+		case 2:{
+			let Base = document.getElementById("text-config")
+			let Input = Base.getElementsByTagName("input")[0]
+			Modified.Data = Input.value;
+			break;
+		}
+		default:
+			Modified["Type"] = 1
+			break;
+	}
+
+	console.log("Changing with data:")
+	console.log(Modified)
+
+	NewData[SelectedIndex] = Modified
+
+	console.log("Updated new data array!")
+
+	let PosX = SelectedIndex%5
+	let PosY = (SelectedIndex-PosX)/5
+
+	let ButtonContainer = document.getElementById("BtnContainer")
+	let VerticalDivisors = ButtonContainer.getElementsByTagName("tr")
+	let HorizontalDivisors = VerticalDivisors[PosY].getElementsByTagName("td")
+
+	let BtnBasis = HorizontalDivisors.item(PosX)
+	let BtnDiv = BtnBasis.getElementsByTagName("div")[0]
+	let Btn = BtnDiv.getElementsByTagName("button")[0]
+
+	Btn.innerText = KeyDataToText(Modified)
+	document.getElementById("Aparador").value = KeyDataToText(Modified)
+}
+
 // Initializes all buttons
 function CreateAllButtons(){
 	try{
 		fetch("/Fetch").then((Doc) => {
 			Doc.text().then((Data) => {
+				console.log(Data)
 				let Parsed = JSON.parse(Data)
 				NewData = Parsed["Keys"]
 				let Table = document.getElementById("BtnContainer")
@@ -421,6 +488,26 @@ function CreateAllButtons(){
 				}
 
 				UpdateDataSelector()
+
+				let UpdateBtn = document.getElementById("SaveBtn")
+				UpdateBtn.onclick = CommitChangeBtn
+
+				let UploadBtn = document.getElementById("UploadBtn")
+				UploadBtn.onclick = () => {
+					fetch("/Update",{
+						method:"PUT",
+						headers:{
+							"Content-type": "application/json"
+						},
+						body: JSON.stringify({
+							"Keys":NewData
+						})
+					}).then((Resp) => {
+						Resp.json().then((Data) => {
+							console.log(Data)
+						})
+					})
+				}
 			})
 		})
 	} catch (Err) {

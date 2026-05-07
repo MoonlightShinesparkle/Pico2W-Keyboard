@@ -10,6 +10,7 @@ import config.server as Server
 keys.SetupKeys()
 
 Server.BindedKeys = keys.TempKeys
+Server.MemoryChip = MemInterfacing.EEProm
 
 MemInterfacing.PrintLen()
 MemInterfacing.Preload(keys.TempKeys)
