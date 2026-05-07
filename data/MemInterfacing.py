@@ -127,5 +127,6 @@ def Preload(Modifiable : list[list[KeyTypes.BaseKey]]):
 
 	try:
 		LoadBlocks(Modifiable)
-	except:
+	except Exception as E:
 		print("Error loading data")
+		print(str(E))

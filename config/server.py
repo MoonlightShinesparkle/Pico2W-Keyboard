@@ -58,7 +58,7 @@ def UpdateRoutine(request : Request):
 
 		if KeyType == 1:
 			ParsedData.append(Misc.KEYIND)
-			ParsedData.append(KeyDatas[Index]["Data"])
+			ParsedData.append(int(KeyDatas[Index]["Data"]))
 
 		elif KeyType == 2:
 			ParsedData.append(Misc.PRESSIND)
