@@ -70,7 +70,7 @@ def UpdateRoutine(request : Request):
 			print("Composite key data types:")
 			for KeyIndex in range(DataLen):
 				print(type(GivenData[KeyIndex]))
-				ParsedData.append(GivenData[KeyIndex])
+				ParsedData.append(int(GivenData[KeyIndex]))
 
 		elif KeyType == 3:
 			ParsedData.append(Misc.TEXTIND)
